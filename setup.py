@@ -1,10 +1,13 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="Plutonium config user interface plugin",
-    version='0.1',
-    install_requires=[
+    name = "plutonium-plugin-configui-web",
+    description = "Web based config user interface plugin for Plutonium",
+    version = '0.2',
+    install_requires = [
+        'plutonium',
+        'sqlchemyforms'
     ],
-    packages=find_packages()
+    packages = find_packages()
 )
 

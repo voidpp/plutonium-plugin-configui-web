@@ -1,0 +1,13 @@
+{
+	"desc": {
+		"code": "en",
+		"name": "English"
+	},
+	"data": {
+		"create": "Create",
+		"url": "URL",
+		"name": "Name",
+		"enabled": "Enabled",
+		"update_interval": "Update interval"
+	}
+}

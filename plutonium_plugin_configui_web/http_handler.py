@@ -5,6 +5,7 @@ from urlparse import urlparse, parse_qs
 from abc import abstractmethod
 import json
 from plutonium.modules.tools import Storage
+import Cookie
 
 from plutonium.modules.logger import get_logger
 logger = get_logger(__name__, 'plutonium')
@@ -30,6 +31,20 @@ class RawHTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(response.content)
 
+    def serve_file(self, file_path):
+        with open(file_path) as f:
+            self.respond(HTTPResponse(f.read(), 200))
+
+    def parse_cookies(self):
+        cookie_raw = self.headers.getfirstmatchingheader('Cookie')
+        if not len(cookie_raw):
+            return Storage()
+
+        C = Cookie.SimpleCookie()
+        C.load(self.headers.getfirstmatchingheader('Cookie')[0])
+
+        return Storage({key: C[key].value for key in C})
+
     def handle_all(self):
 
         request = urlparse(self.path)
@@ -43,9 +58,10 @@ class RawHTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
         # serve the file if exists
         if os.path.isfile(file_path):
-            with open(file_path) as f:
-                self.respond(HTTPResponse(f.read(), 200))
-                return
+            self.serve_file(file_path)
+            return
+
+        request.cookies = self.parse_cookies()
 
         logger.debug("File not found: %s" % file_path)
 
@@ -53,18 +69,24 @@ class RawHTTPHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         request.get_vars = parse_qs(request.query)
 
         # parse POST variables
-        request.post_vars = Storage()
+        request.post_vars = None
         if self.command == 'POST':
+            request.post_vars = Storage()
             length = int(self.headers.getheader('content-length'))
             body = self.rfile.read(length)
             try:
                 request.post_vars = json.loads(body, object_pairs_hook = Storage)
+                logger.debug('POST: %s' % request.post_vars)
             except Exception as e:
                 logger.debug("Cannot parse request body '%s'. Reason: %s" % (body, e))
 
         # if the requested file not exists call the "not found handler"
         if self.file_not_found_handler:
-            self.respond(self.file_not_found_handler.handle_request(request))
+            response = self.file_not_found_handler.handle_request(request)
+            if response is None:
+                self.serve_file(os.path.join(self.document_root, self.default_file))
+            else:
+                self.respond(response)
             return
 
         self.respond(HTTPResponse('file not found', 404))
@@ -109,4 +131,4 @@ class VirtualHandler(object):
             if result is not None:
                 return self.registered_paths[pattern].handle(request)
 
-        return HTTPResponse('virtual request handler not found', 404)
+        return None

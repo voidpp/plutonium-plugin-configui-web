@@ -1,0 +1,3 @@
+[submodule "plutonium_plugin_configui_web/wwwroot/sqlchemyforms"]
+	path = plutonium_plugin_configui_web/wwwroot/sqlchemyforms
+	url = https://github.com/voidpp/sqlchemyforms-javascript.git
