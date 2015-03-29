@@ -17,11 +17,8 @@
         "create_new_filters": "Új szűrő létrehozása",
         "id": "#",
         "output": "Kimenet",
-        "mins": "perc",
         "min": "perc",
-        "secs": "mperc",
         "sec": "mperc",
-        "hours": "óra",
         "hour": "óra",
         "Edit": "Szerkesztés",
         "Delete": "Törlés",
@@ -57,6 +54,6 @@
         "required": "Kötelező",
         "bad_url": "Rossz formátumú URL",
         "bad_field": "Hibák a '<%name%>' mezőn:",
-        "about": "ez itt a plutónium"
+        "about": "Ez itt a Plutonium..."
     }
 }
