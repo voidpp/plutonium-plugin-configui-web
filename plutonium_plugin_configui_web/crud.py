@@ -28,16 +28,18 @@ class CRUD(CrudBase, VirtualRequestHandlerBase):
             return HTTPResponse('Undefined CRUD controller', 404)
 
         try:
-            creq = CrudRequest(request.path, request.get_vars, request.post_vars, request.query, self.session)
-            res = self.call(creq, command)
-
+            res = {}
             code = 200
 
-            try:
-                self.session.commit()
-            except Exception as e:
-                logger.exception(e)
-                res.success = False
+            with self.db_mgr.lock:
+                creq = CrudRequest(request.path, request.get_vars, request.post_vars, request.query, self.session)
+                res = self.call(creq, command)
+
+                try:
+                    self.session.commit()
+                except Exception as e:
+                    logger.exception(e)
+                    res.success = False
 
             try:
                 content = json.dumps(res, cls = JSONEncoder)
