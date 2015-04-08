@@ -11,10 +11,10 @@ from plutonium.modules.logger import get_logger
 logger = get_logger(__name__, 'plutonium')
 
 class CRUD(CrudBase, VirtualRequestHandlerBase):
-    def __init__(self, model, db_mgr):
+    def __init__(self, model, plutonium):
         CrudBase.__init__(self, model)
-        self.db_mgr = db_mgr
-        self.session = self.db_mgr.create_session()
+        self.plutonium = plutonium
+        self.session = self.plutonium.orm_manager.create_session()
 
     def handle(self, request):
         path_parts = request.path.split('/')
@@ -27,16 +27,21 @@ class CRUD(CrudBase, VirtualRequestHandlerBase):
         if not hasattr(self, command):
             return HTTPResponse('Undefined CRUD controller', 404)
 
+        changes = 0
+
         try:
             res = {}
             code = 200
 
-            with self.db_mgr.lock:
+            with self.plutonium.orm_manager.lock:
                 creq = CrudRequest(request.path, request.get_vars, request.post_vars, request.query, self.session)
                 res = self.call(creq, command)
 
                 try:
-                    self.session.commit()
+                    changes = len(self.session.deleted) + len(self.session.new) + len(self.session.dirty)
+                    logger.debug("%d changes on command %s" % (changes, command))
+                    if changes:
+                        self.session.commit()
                 except Exception as e:
                     logger.exception(e)
                     res.success = False
@@ -52,5 +57,9 @@ class CRUD(CrudBase, VirtualRequestHandlerBase):
 
         except CrudException as e:
             response = HTTPResponse(e.message, e.code)
+
+        if changes:
+            logger.info("Reloading fetcher due database changes")
+            self.plutonium.fetcher.reload()
 
         return response

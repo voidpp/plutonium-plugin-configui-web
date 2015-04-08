@@ -51,9 +51,9 @@ class WebConfiguiPlugin(ConfigUserInterfacePluginBase):
 
         RawHTTPHandler.file_not_found_handler.register('\/api\/lang\.js', LanguageHandler(os.path.join(self.cwd, 'languages'), config.cookie_lang_key))
 
-        RawHTTPHandler.file_not_found_handler.register('\/api\/feeds.*', CRUD(Feed, self.plutonium.orm_manager))
-        RawHTTPHandler.file_not_found_handler.register('\/api\/outputs.*', CRUD(Output, self.plutonium.orm_manager))
-        RawHTTPHandler.file_not_found_handler.register('\/api\/filters.*', CRUD(Filter, self.plutonium.orm_manager))
+        RawHTTPHandler.file_not_found_handler.register('\/api\/feeds.*', CRUD(Feed, self.plutonium))
+        RawHTTPHandler.file_not_found_handler.register('\/api\/outputs.*', CRUD(Output, self.plutonium))
+        RawHTTPHandler.file_not_found_handler.register('\/api\/filters.*', CRUD(Filter, self.plutonium))
 
     def listen(self):
         address = (self.host, self.port)
