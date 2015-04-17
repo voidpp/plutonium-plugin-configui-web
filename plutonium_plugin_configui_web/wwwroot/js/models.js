@@ -89,8 +89,8 @@ var models = {
                         var tbl = table({class: 'table table-striped table-hover'},
                             thead(tr(th({style: 'min-width: 150px', lm_key: 'added'}), th({lm_key: 'title'}))),
                             tbody(rows)
-                        ).hide();
-                        var note = a({href: '#', lm_key: 'feed_torrent_notes', onclick: function() { tbl.show(!tbl.isShown()); }});
+                        )._hide();
+                        var note = a({href: '#', lm_key: 'feed_torrent_notes', onclick: function() { tbl._show(!tbl.isShown()); }});
 
                         return [{style: 'max-width: 850px'}, note, tbl];
                     }
